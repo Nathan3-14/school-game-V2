@@ -1,0 +1,53 @@
+"room_1":
+    "map":
+        - "WWWWW"
+        - "W...D"
+        - "W...W"
+        - "D...D"
+        - "WDWWW"
+    "doors":
+        "0 1": ["room_2", "3 1"]
+        "1 0": ["room_3", "1, 4"]
+        "4 1": ["room_4", "0 1"]
+        "4 3": ["room_4", "0 3"]
+
+"room_2":
+    "map": 
+        - "WWWW"
+        - "WP.D"
+        - "WWWW"
+    "doors":
+        "3 1": ["room_1", "0 1"]
+    "start": true
+
+"room_3":
+    "map": 
+        - "WDWWW"
+        - "W.W.W"
+        - "W...W"
+        - "W..CW"
+        - "WWWWW"
+    "doors":
+        "1 4": ["room_1", "1 0"]
+
+"room_4": 
+    "map": 
+        - "WWWWDWW"
+        - "W....WW"
+        - "W.WW.WW"
+        - "D.W...W"
+        - "WWW.WWW"
+        - "D.....W"
+        - "WWWWWWW"
+    "doors":
+        "0 1": ["room_1", "4 1"]
+        "0 3": ["room_1", "4 3"]
+        "4 6": ["room_5", "1 0"]
+
+"room_5":
+    "map": 
+        - "WWW"
+        - "W~W"
+        - "WDW"
+    "doors":
+        "1 0": ["room_4", "4 6"]
