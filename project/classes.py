@@ -1,10 +1,22 @@
 from typing import List, Tuple, Dict
 from rich.console import Console
+from .funcs import error
+
+
+class pos:
+    def __init__(self, start_x: int|str=0, start_y: int|str=0):
+        try:
+            self.x = int(start_x) if isinstance(start_x, str) else start_x
+        except ValueError:
+            error("Invalid position type", Console(), message_start="Code Err")
+        self.y = int(start_y) if isinstance(start_y, str) else start_y
 
 
 class Player:
     def __init__(self):
-        self.icon = "[dodger_blue3]@[/dodger_blue3]"
+        self.icon: str = "[dodger_blue3]@[/dodger_blue3]"
+        self.current_room: str = ""
+        self.position: pos = pos()
     
     def update(self, vector: Tuple[int, int]):
         """
@@ -19,6 +31,14 @@ class Room:
         self.doors = doors
         self.is_start = is_start
         self.console = Console()
+        self.start_pos = pos()
+
+        if self.is_start:
+            for index, line in enumerate(self.map):
+                if "P" in line:
+                    self.start_pos.y = index
+                    self.start_pos.x = line.index("P")
+
 
     def show_map(self) -> None:
         for line_index, line in enumerate(self.map):
