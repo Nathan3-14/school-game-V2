@@ -4,12 +4,23 @@ from .funcs import error
 
 
 class pos:
-    def __init__(self, start_x: int|str=0, start_y: int|str=0):
+    def __init__(self,
+             start_x: int | str = 0,
+             start_y: int | str = 0,
+        ):
         try:
             self.x = int(start_x) if isinstance(start_x, str) else start_x
+            self.y = int(start_y) if isinstance(start_y, str) else start_y
         except ValueError:
-            error("Invalid position type", Console(), message_start="Code Err")
-        self.y = int(start_y) if isinstance(start_y, str) else start_y
+            error(f"Invalid position type {start_x} or {start_y} is not a valid int", Console(), message_start="Code Err")
+            self.x = 0
+            self.y = 0
+
+    def __str__(self):
+        return f"<x:{self.x} y:{self.y}>"
+
+    def __repr__(self):
+        return str(self)
 
 
 class Player:
@@ -40,7 +51,7 @@ class Room:
                     self.start_pos.x = line.index("P")
 
 
-    def show_map(self) -> None:
+    def show_map(self, player: "Player") -> None:
         for line_index, line in enumerate(self.map):
             line_print = f"{line}"
 
@@ -78,8 +89,8 @@ class World:
                 self.starting_room = room_name
         self.player = Player()
         self.player.current_room = self.starting_room
-        self.player.position = self.rooms[self.starting_room]
+        self.player.position = self.rooms[self.starting_room].start_pos
 
     def display(self, room_name: str) -> None:
-        self.rooms[room_name].show_map()
+        self.rooms[room_name].show_map(self.player)
         
