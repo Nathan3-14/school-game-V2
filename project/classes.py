@@ -75,6 +75,15 @@ class Room:
             line_print = line_print.replace(".", " ")
             line_print = line_print.replace("~", "[orchid1]~[/orchid1]")
             line_print = line_print.replace("P", " ")
+
+            if line_index == player.position.y:
+                new_line = ""
+                for index, char in enumerate(line_print):
+                    if index == player.position.x:
+                        player.icon
+                    else:
+                        new_line += char
+                line_print = new_line #! FIX
         
             self.console.print(line_print)
     
