@@ -15,10 +15,24 @@ class Game:
         for room_name, room_data in world_dict.items():
             room_map = room_data["map"]
             room_doors = {
-                pos(position.split(" ")[0], position.split(" ")[1]): [data[0], pos(data[1].split(" ")[0], data[1].split(" ")[1])] for position, data in room_data["doors"].items()
+                pos(
+                    position.split(" ")[0],
+                    position.split(" ")[1]
+                ): [
+                    data[0],
+                    pos(
+                        data[1].split(" ")[0],
+                        data[1].split(" ")[1]
+                    )
+                ] for position, data in room_data["doors"].items()
             }
             print(room_doors)
-            room_temp = Room(room_name, room_data["map"], room_data["doors"], False if "start" not in list(room_data.keys()) else room_data["start"])
+            room_temp = Room(
+                room_name,
+                room_data["map"],
+                room_data["doors"],
+                False if "start" not in list(room_data.keys()) else room_data["start"]
+            )
     
             rooms.append(room_temp)
         
