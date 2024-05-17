@@ -55,6 +55,15 @@ class Room:
         for line_index, line in enumerate(self.map):
             line_print = f"{line}"
 
+            if line_index == player.position.y:
+                new_line = ""
+                for index, char in enumerate(line_print):
+                    if index == player.position.x:
+                        new_line += player.icon
+                    else:
+                        new_line += char
+                line_print = new_line #! FIX
+
             for index, char in enumerate(line):
                 if char != "D":
                     continue
@@ -76,14 +85,6 @@ class Room:
             line_print = line_print.replace("~", "[orchid1]~[/orchid1]")
             line_print = line_print.replace("P", " ")
 
-            if line_index == player.position.y:
-                new_line = ""
-                for index, char in enumerate(line_print):
-                    if index == player.position.x:
-                        player.icon
-                    else:
-                        new_line += char
-                line_print = new_line #! FIX
         
             self.console.print(line_print)
     
