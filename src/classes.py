@@ -26,16 +26,17 @@ class Player:
 
 
 class Door:
-    def __init__(self, room_name: str, room_pos: Pos) -> None:
+    def __init__(self, room_name: str, start_room_pos: Pos, end_room_pos: Pos) -> None:
         self.link_room = room_name
-        self.link_room_position = room_pos
+        self.link_room_position = end_room_pos
+        self.start_room_position = start_room_pos
 
 
 class Room:
-    def __init__(self, name: str, map: List[str]) -> None:
+    def __init__(self, name: str, map: List[str], doors: List[Door]) -> None:
         self.name = name
         self.map = map
-        self.doors = {}
+        self.doors = doors
 
 
 class World:
