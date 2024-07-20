@@ -1,4 +1,6 @@
+import dis
 import enum
+from errno import ENETRESET
 from typing import List
 
 
@@ -72,5 +74,20 @@ class World:
         for section, is_in_view in self.sections.items():
             if not is_in_view:
                 continue
+            
+            for line_index, line in enumerate(section.display_area):
+                #? iterate and replace with different line each time from display
+                replace_string = [char for char in display[section.start.y+line_index]]
 
-            [char for char in display][section.start.x:section.end.x] = section #? iterate and replace with different line each time from display
+                line_replaced = ""
+                for char_index, char in enumerate(line):
+                    if char == " ":
+                        replace_char = display[section.start.y+line_index][section.start.x+char_index]
+                    else:
+                        replace_char = char
+                    line_replaced += replace_char
+                
+                replace_string[section.start.x:section.end.x] = line_replaced
+                display[section.start.y+line_index] = "".join(replace_string)
+
+        print("\n".join(display))
