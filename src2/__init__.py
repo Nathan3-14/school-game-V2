@@ -1,11 +1,1 @@
-from .classes import World
-
-world = World(
-    [
-        "     "
-        "#####"
-        "#   #"
-        "#   #"
-        "#####"
-    ]
-)
+from .classes import *
