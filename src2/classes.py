@@ -1,6 +1,5 @@
 import dis
 import enum
-from errno import ENETRESET
 from typing import List
 
 
@@ -34,10 +33,21 @@ class Door:
         self.door_direction = direction
 
 
+class Player:
+    def __init__(self):
+        pass
+
+    def move(self, vector: Pos) -> None:
+        self.position += vector
+
+
 class Section:
-    def __init__(self, area: List[str], start: Pos, end: Pos) -> None:
+    def __init__(self, area: List[str], start: Pos, end: Pos, is_discovered: bool=False, is_start: bool=False) -> None:
         self.display_area = area
         self.doors = []
+
+        self.is_start = is_start
+        self.is_discovered = is_discovered
 
         self.start = start
         self.end = end
@@ -61,12 +71,12 @@ class Section:
 
 
 class World:
-    def __init__(self, world: List[Section]) -> None:
+    def __init__(self, world: List[Section], player: Player) -> None:
         self.sections = {
-            # section: is_discovered for section in world
-            # section: False for section in world
-            section: True for section in world #? Test Line
+            section: section.is_discovered for section in world
+            # section: True for section in world #? Test Line
         }
+        self.player = player
     
     def display(self) -> None:
         display = ["                    "] * 10
@@ -88,6 +98,10 @@ class World:
                     line_replaced += replace_char
                 
                 replace_string[section.start.x:section.end.x] = line_replaced
-                display[section.start.y+line_index] = "".join(replace_string)
+                display[section.start.y+line_index] = "".join(replace_string).replace("P", ".")
 
         print("\n".join(display))
+
+
+
+
