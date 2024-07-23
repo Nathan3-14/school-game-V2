@@ -1,10 +1,8 @@
-import dis
-import enum
-from typing import List
+from typing import Any, List
 
 
 class Pos:
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int=0, y: int=0) -> None:
         self.x = x
         self.y = y
     
@@ -17,12 +15,19 @@ class Pos:
     def __str__(self) -> str:
         return f"({self.x}, {self.y})"
 
+class Vector(Pos):
+    def __init__(self, x: int=0, y: int=0) -> None:
+        super().__init__(x, y)
+    
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        return Vector(args[0], args[1])
+
 
 directions = {
-    ">": Pos(1, 0),
-    "<": Pos(-1, 0),
-    "^": Pos(0, 1),
-    "v": Pos(0, -1)
+    ">": Vector(1, 0),
+    "<": Vector(-1, 0),
+    "^": Vector(0, 1),
+    "v": Vector(0, -1)
 }
 directions_keys = list(directions.keys())
 
@@ -35,10 +40,13 @@ class Door:
 
 class Player:
     def __init__(self):
-        pass
+        self.position = Pos(0, 0) #? Start position from P in section
+        self.world = World
 
-    def move(self, vector: Pos) -> None:
+    def move(self, vector: Vector) -> None:
         self.position += vector
+        self.world.sections
+
 
 
 class Section:
@@ -46,7 +54,11 @@ class Section:
         self.display_area = area
         self.doors = []
 
-        self.is_start = is_start
+        self.player_start_position = None
+        for index, line in enumerate(area):
+            if "P" not in line:
+                continue
+            self.player_start_position = Pos(line.index("P"), index)
         self.is_discovered = is_discovered
 
         self.start = start
@@ -71,12 +83,17 @@ class Section:
 
 
 class World:
-    def __init__(self, world: List[Section], player: Player) -> None:
+    def __init__(self, world: List[Section], start_section: Section, player: Player) -> None:
         self.sections = {
             section: section.is_discovered for section in world
             # section: True for section in world #? Test Line
         }
+        self.start_section = start_section
         self.player = player
+        self.player.position = self.start_section.player_start_position
+        self.player.world = self
+
+        self.collisions = ["#", "~"]
     
     def display(self) -> None:
         display = ["                    "] * 10
@@ -99,6 +116,12 @@ class World:
                 
                 replace_string[section.start.x:section.end.x] = line_replaced
                 display[section.start.y+line_index] = "".join(replace_string).replace("P", ".")
+
+        display[self.player.position.y] = "".join(
+            [
+                char if index != self.player.position.x else "@" for index, char in enumerate(display[self.player.position.y])
+            ]
+        )
 
         print("\n".join(display))
 
