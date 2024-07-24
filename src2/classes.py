@@ -1,5 +1,4 @@
-from typing import Any, List
-
+from typing import List
 
 class Pos:
     def __init__(self, x: int=0, y: int=0) -> None:
@@ -18,9 +17,6 @@ class Pos:
 class Vector(Pos):
     def __init__(self, x: int=0, y: int=0) -> None:
         super().__init__(x, y)
-    
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return Vector(args[0], args[1])
 
 
 directions = {
@@ -39,13 +35,19 @@ class Door:
 
 
 class Player:
-    def __init__(self):
+    from .input_handlers import InputHandler
+
+    def __init__(self, input_handler: InputHandler):
         self.position = Pos(0, 0) #? Start position from P in section
         self.world = World
+        self.handler = input_handler
+    
+    def get_input(self) -> None:
+        _input_vector = self.handler.get_input()
+        self.move(_input_vector)
 
     def move(self, vector: Vector) -> None:
         self.position += vector
-        self.world.sections
 
 
 
@@ -76,7 +78,7 @@ class Section:
                 self.doors.append(
                     Door(
                         Pos(char_index, index),
-                        directions[char]
+                        directions[char] # type: ignore
                     )
                 )
 
@@ -90,8 +92,8 @@ class World:
         }
         self.start_section = start_section
         self.player = player
-        self.player.position = self.start_section.player_start_position
-        self.player.world = self
+        self.player.position = self.start_section.player_start_position # type: ignore
+        self.player.world = self # type: ignore
 
         self.collisions = ["#", "~"]
     
@@ -125,6 +127,9 @@ class World:
 
         print("\n".join(display))
 
+    def frame(self) -> None:
+        self.player.get_input()
+        self.display()
 
 
 

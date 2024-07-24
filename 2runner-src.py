@@ -55,24 +55,27 @@ sections = [
     )
 ]
 
-player = src2.Player()
+player = src2.Player(src2.KeyboardHandler())
 
 world = src2.World(
     sections,
     sections[0],
     player
 )
+while True:
+    world.frame()
+    time.sleep(2)
 
 
-world.display()
-time.sleep(1)
-player.move(src2.Pos(1, 0))
-world.display()
-time.sleep(1)
-player.move(src2.Pos(1, 0))
-world.display()
-time.sleep(1)
-player.move(src2.Pos(0, 1))
-world.display()
-time.sleep(1)
+# world.display()
+# time.sleep(1)
+# player.move(src2.Pos(1, 0))
+# world.display()
+# time.sleep(1)
+# player.move(src2.Pos(1, 0))
+# world.display()
+# time.sleep(1)
+# player.move(src2.Pos(0, 1))
+# world.display()
+# time.sleep(1)
 
