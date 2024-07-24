@@ -25,6 +25,6 @@ class KeyboardHandler(InputHandler):
         super().__init__()
 
     def get_input(self) -> Vector:
-        _vector = Vector(keyboard.is_pressed("w")*-1 + keyboard.is_pressed("s")*1, keyboard.is_pressed("a")*-1 + keyboard.is_pressed("d")*1)
+        _vector = Vector(keyboard.is_pressed("a")*-1 + keyboard.is_pressed("d")*1, keyboard.is_pressed("w")*-1 + keyboard.is_pressed("s")*1)
         return _vector
 
