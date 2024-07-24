@@ -3,10 +3,24 @@ from .classes import Vector
 
 class InputHandler:
     def __init__(self) -> None:
-        pass
+        self._vector = Vector()
+        self.player = None
 
     def get_input(self) -> Vector:
-        return Vector(0, 0)
+        return self._vector
+    
+    def left(self):
+        self._vector.x -= 1
+        self.player.world.frame()
+    def right(self):
+        self._vector.x += 1
+        self.player.world.frame()
+    def up(self):
+        self._vector.y -= 1
+        self.player.world.frame()
+    def down(self):
+        self._vector.y += 1
+        self.player.world.frame()
         
 
 # class InputKeywordHandler(InputHandler):
@@ -23,8 +37,28 @@ class InputHandler:
 class KeyboardHandler(InputHandler):
     def __init__(self) -> None:
         super().__init__()
+        keyboard.on_press(lambda key: self.move(key.name))
+        # keyboard.on_press_key("a", self.left)
+        # keyboard.on_press_key("d", self.right)
+        # keyboard.on_press_key("w", self.up)
+        # keyboard.on_press_key("s", self.down)
+    
+    def move(self, key: str) -> None:
+        print(f"read key {key}")
+        match key:
+            case "a":
+                self.left()
+            case "d":
+                self.down()
+            case "w":
+                self.up()
+            case "d":
+                self.down()
 
-    def get_input(self) -> Vector:
-        _vector = Vector(keyboard.is_pressed("a")*-1 + keyboard.is_pressed("d")*1, keyboard.is_pressed("w")*-1 + keyboard.is_pressed("s")*1)
-        return _vector
+    # def get_input(self) -> Vector:
+    #     # _vector = Vector(
+    #     #     self.is_just_pressed("a")*-1 + self.is_just_pressed("d")*1,
+    #     # 0)
+    #         # self.up_pressed*-1 + self.down_pressed*1)
+    #     return _vector
 

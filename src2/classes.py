@@ -41,6 +41,7 @@ class Player:
         self.position = Pos(0, 0) #? Start position from P in section
         self.world = World
         self.handler = input_handler
+        self.handler.player = self
     
     def get_input(self) -> None:
         _input_vector = self.handler.get_input()
@@ -94,10 +95,12 @@ class World:
         self.player = player
         self.player.position = self.start_section.player_start_position # type: ignore
         self.player.world = self # type: ignore
+        
+        self.display_old: List[str] = []
 
         self.collisions = ["#", "~"]
     
-    def display(self) -> None:
+    def display(self) -> List:
         display = ["                    "] * 10
 
         for section, is_in_view in self.sections.items():
@@ -125,11 +128,14 @@ class World:
             ]
         )
 
-        print("\n".join(display))
+        return display
+        
 
     def frame(self) -> None:
         self.player.get_input()
-        self.display()
-
-
-
+        
+        self.display_new = self.display()
+        
+        if self.display_new != self.display_old:
+            print("\n".join(self.display_new))
+        self.display_old = self.display_new.copy()

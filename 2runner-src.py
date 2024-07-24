@@ -64,7 +64,6 @@ world = src2.World(
 )
 while True:
     world.frame()
-    time.sleep(2)
 
 
 # world.display()
