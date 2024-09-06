@@ -62,19 +62,7 @@ world = src2.World(
     sections[0],
     player
 )
+
 while True:
     world.frame()
-
-
-# world.display()
-# time.sleep(1)
-# player.move(src2.Pos(1, 0))
-# world.display()
-# time.sleep(1)
-# player.move(src2.Pos(1, 0))
-# world.display()
-# time.sleep(1)
-# player.move(src2.Pos(0, 1))
-# world.display()
-# time.sleep(1)
 

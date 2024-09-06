@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 class Pos:
@@ -17,6 +18,14 @@ class Pos:
 class Vector(Pos):
     def __init__(self, x: int=0, y: int=0) -> None:
         super().__init__(x, y)
+    
+    def __eq__(self, other: object):
+        if isinstance(other, Vector):
+            return (self.x == other.x) and (self.y == other.y)
+        return NotImplemented
+
+    def __ne__(self, other: object):
+        return not self.__eq__(other)
 
 
 directions = {
@@ -44,7 +53,15 @@ class Player:
         self.handler.player = self
     
     def get_input(self) -> None:
-        _input_vector = self.handler.get_input()
+        _input_vector = Vector()
+        have_input = False
+        
+        while _input_vector == Vector():
+            # print("getting input")
+            _input_vector = self.handler.get_input()
+            # print(f"{_input_vector} == {Vector()}: {_input_vector==Vector()}")
+            # print(f"{_input_vector} != {Vector()}: {_input_vector!=Vector()}")
+            # time.sleep(1)
         self.move(_input_vector)
 
     def move(self, vector: Vector) -> None:
@@ -133,9 +150,6 @@ class World:
 
     def frame(self) -> None:
         self.player.get_input()
+        print("player input recieved")
         
-        self.display_new = self.display()
-        
-        if self.display_new != self.display_old:
-            print("\n".join(self.display_new))
-        self.display_old = self.display_new.copy()
+        print("\n".join(self.display()))
