@@ -1,19 +1,32 @@
 import time
 from typing import List
 
+
 class Pos:
     def __init__(self, x: int=0, y: int=0) -> None:
         self.x = x
         self.y = y
     
-    def __add__(self, other: "Pos"):
+    def __add__(self, other: "Pos") -> "Pos":
         return Pos(
             self.x + other.x,
             self.y + other.y
         )
 
-    def __str__(self) -> str:
+    def __sub__(self, other: "Pos") -> "Pos":
+        return Pos(
+            self.x - other.x,
+            self.y - other.y
+        )
+
+    def __repr__(self) -> str:
         return f"({self.x}, {self.y})"
+    
+    def __eq__(self, other: object) -> bool:
+        return (self.x == other.x) and (self.y == other.y) #type:ignore
+    
+    def __hash__(self):
+        return hash((self.x, self.y))
 
 class Vector(Pos):
     def __init__(self, x: int=0, y: int=0) -> None:
@@ -37,10 +50,10 @@ directions = {
 directions_keys = list(directions.keys())
 
 
-class Door:
-    def __init__(self, start_room_pos: Pos, direction: str) -> None:
-        self.door_position = start_room_pos
-        self.door_direction = direction
+# class Door:
+#     def __init__(self, start_room_pos: Pos, direction: Vector) -> None:
+#         self.door_position = start_room_pos
+#         self.door_direction = direction
 
 
 class Player:
@@ -49,30 +62,30 @@ class Player:
     def __init__(self, input_handler: InputHandler):
         self.position = Pos(0, 0) #? Start position from P in section
         self.world = World
+        self.last_move = Vector()
         self.handler = input_handler
-        self.handler.player = self
+        self.handler.player = self #type:ignore #! complains about player attribute no on player !#
     
     def get_input(self) -> None:
         _input_vector = Vector()
         have_input = False
         
         while _input_vector == Vector():
-            # print("getting input")
             _input_vector = self.handler.get_input()
-            # print(f"{_input_vector} == {Vector()}: {_input_vector==Vector()}")
-            # print(f"{_input_vector} != {Vector()}: {_input_vector!=Vector()}")
-            # time.sleep(1)
         self.move(_input_vector)
 
     def move(self, vector: Vector) -> None:
         self.position += vector
-
+        self.last_move = vector
+    
+    def move_back(self) -> None:
+        self.position -= self.last_move
 
 
 class Section:
-    def __init__(self, area: List[str], start: Pos, end: Pos, is_discovered: bool=False, is_start: bool=False) -> None:
+    def __init__(self, area: List[str], start: Pos, end: Pos, is_discovered: bool=False) -> None:
         self.display_area = area
-        self.doors = []
+        # self.doors = []
 
         self.player_start_position = None
         for index, line in enumerate(area):
@@ -86,70 +99,130 @@ class Section:
 
         display_area_reversed = self.display_area.copy()
         display_area_reversed.reverse()
-        for index, line in enumerate(display_area_reversed):
-            if not any(value in line for value in directions_keys):
-                continue
+        # for index, line in enumerate(display_area_reversed):
+        #     if not any(value in line for value in directions_keys):
+        #         continue
 
-            for char_index, char in enumerate(line):
-                if char not in directions_keys:
-                    continue
-                self.doors.append(
-                    Door(
-                        Pos(char_index, index),
-                        directions[char] # type: ignore
-                    )
-                )
+        #     for char_index, char in enumerate(line):
+        #         if char not in directions_keys:
+        #             continue
+        #         self.doors.append(
+        #             Door(
+        #                 Pos(char_index, index),
+        #                 directions[char]
+        #             )
+        #         )
+    
+
+    def __contains__(self, player_object: Player):
+        positions = [
+            Pos(x, y)
+            for x in range(self.start.x, self.end.x+2)
+            for y in range(self.start.y, self.end.y+2)
+        ]
+        print(positions)
+        print(player_object.position)
+        print("")
+
+        return player_object.position in positions
 
 
 
 class World:
     def __init__(self, world: List[Section], start_section: Section, player: Player) -> None:
-        self.sections = {
-            section: section.is_discovered for section in world
+        self.sections = [
+            section for section in world
             # section: True for section in world #? Test Line
-        }
+        ]
         self.start_section = start_section
         self.player = player
         self.player.position = self.start_section.player_start_position # type: ignore
         self.player.world = self # type: ignore
-        
-        self.display_old: List[str] = []
 
+        self.display: List[str] = []
+        
         self.collisions = ["#", "~"]
+
+
+        self.render() #? Renders the first screen of the game
     
-    def display(self) -> List:
+    def update_display(self, skip_actions: bool=False) -> None:
+        print("Updating display")
         display = ["                    "] * 10
 
-        for section, is_in_view in self.sections.items():
-            if not is_in_view:
+        for section in self.sections:
+            if not section.is_discovered:
+                print(f"Section not discovered")
                 continue
+            print("Section discovered")
             
             for line_index, line in enumerate(section.display_area):
                 #? iterate and replace with different line each time from display
                 replace_string = [char for char in display[section.start.y+line_index]]
 
                 line_replaced = ""
-                for char_index, char in enumerate(line):
+                for char_index, char in enumerate(line): #? For layering the sections correctly
                     if char == " ":
                         replace_char = display[section.start.y+line_index][section.start.x+char_index]
                     else:
                         replace_char = char
                     line_replaced += replace_char
+                    print(f"added {replace_char}")
                 
                 replace_string[section.start.x:section.end.x] = line_replaced
+                print(f"lr: {line_replaced}")
                 display[section.start.y+line_index] = "".join(replace_string).replace("P", ".")
+
+        if self.check_collisions():
+            self.player.move_back()
+        if not skip_actions:
+            self.check_actions()
+
 
         display[self.player.position.y] = "".join(
             [
                 char if index != self.player.position.x else "@" for index, char in enumerate(display[self.player.position.y])
             ]
-        )
+        ) #? For placing the player at the correct position
 
-        return display
+        self.display = display
+    
+    def check_collisions(self) -> bool:
+        try:
+            return self.display[self.player.position.y][self.player.position.x] in self.collisions
+        except IndexError: #? Used to fix error on first rendering of game screen
+            return False
+    
+    def check_actions(self) -> None:
+        print("checking actions")
+        try:
+            self.display[self.player.position.y]
+        except IndexError:#? Used to fix error on first rendering of game screen
+            return None
         
+        current_icon = self.display[self.player.position.y][self.player.position.x]
+        match current_icon:
+            case ">" | "<" | "^" | "v":
+                match current_icon:
+                    case ">":
+                        self.player.move(Vector(1, 0))
+                    case "<":
+                        self.player.move(Vector(-1, 0))
+                    case "v":
+                        self.player.move(Vector(0, 1))
+                    case "^":
+                        self.player.move(Vector(0, -1))
+                for section in self.sections:
+                    if self.player in section:
+                        section.is_discovered = True
+                self.update_display(skip_actions=True)
+            case _:
+                pass
+    
+    def render(self):
+        self.update_display()
+        print("\n".join(self.display))
 
     def frame(self) -> None:
         self.player.get_input()
-        print("player input recieved")
-        
-        print("\n".join(self.display()))
+        self.render()
