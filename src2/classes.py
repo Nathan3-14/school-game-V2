@@ -99,19 +99,6 @@ class Section:
 
         display_area_reversed = self.display_area.copy()
         display_area_reversed.reverse()
-        # for index, line in enumerate(display_area_reversed):
-        #     if not any(value in line for value in directions_keys):
-        #         continue
-
-        #     for char_index, char in enumerate(line):
-        #         if char not in directions_keys:
-        #             continue
-        #         self.doors.append(
-        #             Door(
-        #                 Pos(char_index, index),
-        #                 directions[char]
-        #             )
-        #         )
     
 
     def __contains__(self, player_object: Player):
@@ -120,9 +107,6 @@ class Section:
             for x in range(self.start.x, self.end.x+2)
             for y in range(self.start.y, self.end.y+2)
         ]
-        print(positions)
-        print(player_object.position)
-        print("")
 
         return player_object.position in positions
 
@@ -147,14 +131,11 @@ class World:
         self.render() #? Renders the first screen of the game
     
     def update_display(self, skip_actions: bool=False) -> None:
-        print("Updating display")
         display = ["                    "] * 10
 
         for section in self.sections:
             if not section.is_discovered:
-                print(f"Section not discovered")
                 continue
-            print("Section discovered")
             
             for line_index, line in enumerate(section.display_area):
                 #? iterate and replace with different line each time from display
@@ -167,10 +148,8 @@ class World:
                     else:
                         replace_char = char
                     line_replaced += replace_char
-                    print(f"added {replace_char}")
                 
                 replace_string[section.start.x:section.end.x] = line_replaced
-                print(f"lr: {line_replaced}")
                 display[section.start.y+line_index] = "".join(replace_string).replace("P", ".")
 
         if self.check_collisions():
@@ -194,7 +173,6 @@ class World:
             return False
     
     def check_actions(self) -> None:
-        print("checking actions")
         try:
             self.display[self.player.position.y]
         except IndexError:#? Used to fix error on first rendering of game screen
@@ -205,13 +183,13 @@ class World:
             case ">" | "<" | "^" | "v":
                 match current_icon:
                     case ">":
-                        self.player.move(Vector(1, 0))
+                        self.player.move(Vector(2, 0))
                     case "<":
-                        self.player.move(Vector(-1, 0))
+                        self.player.move(Vector(-2, 0))
                     case "v":
-                        self.player.move(Vector(0, 1))
+                        self.player.move(Vector(0, 2))
                     case "^":
-                        self.player.move(Vector(0, -1))
+                        self.player.move(Vector(0, -2))
                 for section in self.sections:
                     if self.player in section:
                         section.is_discovered = True
@@ -219,10 +197,12 @@ class World:
             case _:
                 pass
     
-    def render(self):
+    def render(self, skip_print: bool=False):
         self.update_display()
-        print("\n".join(self.display))
+        if not skip_print:
+            print("\n".join(self.display))
 
     def frame(self) -> None:
         self.player.get_input()
+        self.render(skip_print=True)
         self.render()
