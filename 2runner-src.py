@@ -11,8 +11,7 @@ sections = [
             "#####"
         ],
         src2.Pos(0, 0),
-        src2.Pos(4, 3),
-        is_discovered=True
+        src2.Pos(4, 3)
     ),
     src2.Section(
         [
@@ -74,7 +73,7 @@ world = src2.World(
     sections,
     sections[0],
     player,
-    loot_table
+    chest_table=loot_table
 )
 
 while True:
