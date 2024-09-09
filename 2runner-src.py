@@ -56,11 +56,25 @@ sections = [
 ]
 
 player = src2.Player(src2.KeyboardHandler())
+loot_table = src2.LootTable({
+    "key": {
+        "min": 1,
+        "max": 2,
+        "weight": 1
+    },
+    "gold": {
+        "min": 3,
+        "max": 5,
+        "weight": 1
+    }
+})
+
 
 world = src2.World(
     sections,
     sections[0],
-    player
+    player,
+    loot_table
 )
 
 while True:

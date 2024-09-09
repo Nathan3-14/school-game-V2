@@ -1,44 +1,8 @@
 import time
-from typing import List
+from typing import Dict, List
+from .common_classes import LootTable, Vector, Pos
 
 
-class Pos:
-    def __init__(self, x: int=0, y: int=0) -> None:
-        self.x = x
-        self.y = y
-    
-    def __add__(self, other: "Pos") -> "Pos":
-        return Pos(
-            self.x + other.x,
-            self.y + other.y
-        )
-
-    def __sub__(self, other: "Pos") -> "Pos":
-        return Pos(
-            self.x - other.x,
-            self.y - other.y
-        )
-
-    def __repr__(self) -> str:
-        return f"({self.x}, {self.y})"
-    
-    def __eq__(self, other: object) -> bool:
-        return (self.x == other.x) and (self.y == other.y) #type:ignore
-    
-    def __hash__(self):
-        return hash((self.x, self.y))
-
-class Vector(Pos):
-    def __init__(self, x: int=0, y: int=0) -> None:
-        super().__init__(x, y)
-    
-    def __eq__(self, other: object):
-        if isinstance(other, Vector):
-            return (self.x == other.x) and (self.y == other.y)
-        return NotImplemented
-
-    def __ne__(self, other: object):
-        return not self.__eq__(other)
 
 
 directions = {
@@ -61,6 +25,7 @@ class Player:
 
     def __init__(self, input_handler: InputHandler):
         self.position = Pos(0, 0) #? Start position from P in section
+        self.inventory: Dict[str, int] = {}
         self.world = World
         self.last_move = Vector()
         self.handler = input_handler
@@ -68,7 +33,6 @@ class Player:
     
     def get_input(self) -> None:
         _input_vector = Vector()
-        have_input = False
         
         while _input_vector == Vector():
             _input_vector = self.handler.get_input()
@@ -85,7 +49,6 @@ class Player:
 class Section:
     def __init__(self, area: List[str], start: Pos, end: Pos, is_discovered: bool=False) -> None:
         self.display_area = area
-        # self.doors = []
 
         self.player_start_position = None
         for index, line in enumerate(area):
@@ -113,7 +76,7 @@ class Section:
 
 
 class World:
-    def __init__(self, world: List[Section], start_section: Section, player: Player) -> None:
+    def __init__(self, world: List[Section], start_section: Section, player: Player, chest_table: LootTable | None=None) -> None:
         self.sections = [
             section for section in world
             # section: True for section in world #? Test Line
@@ -125,7 +88,9 @@ class World:
 
         self.display: List[str] = []
         
-        self.collisions = ["#", "~"]
+        self.collisions = ["#"]
+
+        self.chest_table = chest_table
 
 
         self.render() #? Renders the first screen of the game
@@ -183,17 +148,26 @@ class World:
             case ">" | "<" | "^" | "v":
                 match current_icon:
                     case ">":
-                        self.player.move(Vector(2, 0))
+                        self.player.move(Vector(1, 0))
                     case "<":
                         self.player.move(Vector(-2, 0))
                     case "v":
-                        self.player.move(Vector(0, 2))
+                        self.player.move(Vector(0, 1))
                     case "^":
-                        self.player.move(Vector(0, -2))
+                        self.player.move(Vector(0, -1))
                 for section in self.sections:
                     if self.player in section:
                         section.is_discovered = True
                 self.update_display(skip_actions=True)
+            case "=":
+                if "key" not in list(self.player.inventory.keys()):
+                    self.player.move_back()
+                elif self.player.inventory["key"] >= 1:
+                    self.player.inventory["key"] -= 1
+                else:
+                    self.player.move_back()
+            case "*":
+                self.chest_table.get_item() #type:ignore
             case _:
                 pass
     
