@@ -3,8 +3,6 @@ from typing import Dict, List
 from .common_classes import LootTable, Vector, Pos
 
 
-
-
 directions = {
     ">": Vector(1, 0),
     "<": Vector(-1, 0),
@@ -63,6 +61,12 @@ class Section:
         display_area_reversed = self.display_area.copy()
         display_area_reversed.reverse()
     
+    def set(self, position: Pos, target_character: str) -> None:
+        from .functions import set_in_string
+
+        print(self.display_area)
+        self.display_area[position.y] = set_in_string(self.display_area[position.y], position.x, target_character)
+    
 
     def __contains__(self, player_object: Player):
         positions = [
@@ -88,6 +92,7 @@ class World:
         self.player.world = self # type: ignore
 
         self.display: List[str] = []
+        self.message = ""
         
         self.collisions = ["#"]
 
@@ -109,14 +114,15 @@ class World:
 
                 line_replaced = ""
                 for char_index, char in enumerate(line): #? For layering the sections correctly
-                    if char == " ":
+                    if char == ",":
                         replace_char = display[section.start.y+line_index][section.start.x+char_index]
                     else:
                         replace_char = char
                     line_replaced += replace_char
                 
                 replace_string[section.start.x:section.end.x] = line_replaced
-                display[section.start.y+line_index] = "".join(replace_string).replace("P", ".")
+                display[section.start.y+line_index] = "".join(replace_string).replace("P", " ")
+                display[section.start.y+line_index] = "".join(replace_string).replace(".", " ")
 
         if self.check_collisions():
             self.player.move_back()
@@ -165,16 +171,31 @@ class World:
                     self.player.move_back()
                 elif self.player.inventory["key"] >= 1:
                     self.player.inventory["key"] -= 1
+                    self.message = "You used <1> key!"
+                    self.get_current_section().set(self.player.position, ".")
                 else:
                     self.player.move_back()
+                    self.message = "You need a key!"
             case "*":
-                self.chest_table.get_item() #type:ignore
+                item_gotten = self.chest_table.get_item() #type:ignore
+                self.message = f"You got {item_gotten[1]} {item_gotten[0]}(s)"
+                
+                if item_gotten in list(self.player.inventory.keys()):
+                    self.player.inventory[item_gotten[0]] += item_gotten[1]
+                else:
+                    self.player.inventory[item_gotten[0]] = item_gotten[1]
+            case "~":
+                print("You Win!")
+                quit()
             case _:
                 pass
     
     def render(self, skip_print: bool=False):
         self.update_display()
         if not skip_print:
+            print(f"{self.message}")
+            self.message = ""
+            print(f"Inventory: {','.join(self.player.inventory)}")
             print("\n".join(self.display))
 
     def frame(self) -> None:
