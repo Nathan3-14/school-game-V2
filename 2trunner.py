@@ -23,4 +23,4 @@ world = src2.World(
 
 while True:
     world.frame()
-    world.sections[0].set(src2.Pos(0, 0), "!")
+    # world.sections[0].set(src2.Pos(0, 0), "!")

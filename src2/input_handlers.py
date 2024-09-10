@@ -27,12 +27,12 @@ class TypingHandler(InputHandler):
                 return self.get_input()
 
 class KeyboardHandler(InputHandler):
-    import keyboard
     def __init__(self) -> None:
         super().__init__()
         self.key_presses: Dict[str, bool] = {}
 
     def is_just_pressed(self, key: str) -> bool:
+        import keyboard
         if (not keyboard.is_pressed(key)):
             self.key_presses[key] = False
             return False

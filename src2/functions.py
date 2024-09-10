@@ -1,13 +1,20 @@
 import json
 
-from .classes import Player, World
+from .classes import Player, Section, World, Pos
+from .common_classes import LootTable
 from .input_handlers import InputHandler
 
 def create_world_from_file(file_path: str, handler: InputHandler) -> World:
     data = json.load(open(file_path))
 
-    sections = []
-    loot_table = data["loot"]["chest1"]
+    sections = [
+        Section(
+            map_object["map"],
+            Pos(map_object["tl_bound"][0], map_object["tl_bound"][1]),
+            Pos(map_object["br_bound"][0], map_object["br_bound"][1])
+        ) for map_object in data["sections"]
+    ]
+    loot_table = LootTable(data["loot"]["chest1"])
 
     return World(
         sections,
