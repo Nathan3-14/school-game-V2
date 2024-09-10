@@ -82,6 +82,7 @@ class World:
             # section: True for section in world #? Test Line
         ]
         self.start_section = start_section
+        self.start_section.is_discovered = True
         self.player = player
         self.player.position = self.start_section.player_start_position # type: ignore
         self.player.world = self # type: ignore

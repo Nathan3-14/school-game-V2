@@ -1,5 +1,6 @@
 import src2
 import time
+import sys
 
 
 sections = [
@@ -54,7 +55,10 @@ sections = [
     )
 ]
 
-player = src2.Player(src2.KeyboardHandler())
+if "-t" in sys.argv:
+    player = src2.Player(src2.TypingHandler())
+else:
+    player = src2.Player(src2.KeyboardHandler())
 loot_table = src2.LootTable({
     "key": {
         "min": 1,
