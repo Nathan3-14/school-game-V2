@@ -4,7 +4,7 @@ sections = [
     src2.Section(
         [
             "#####",
-            "#P  #",
+            "# P #",
             "#   #",
             "#####"
         ],
@@ -13,7 +13,6 @@ sections = [
     )
 ]
 player = src2.Player(src2.TestHandler([
-    "d", "d", "s", "w", "a", "a"
 ]))
 world = src2.World(
     sections,
