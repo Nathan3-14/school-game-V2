@@ -13,6 +13,7 @@ sections = [
     )
 ]
 player = src2.Player(src2.TestHandler([
+    "s"
 ]))
 world = src2.World(
     sections,

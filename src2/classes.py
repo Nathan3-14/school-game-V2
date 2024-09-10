@@ -53,6 +53,7 @@ class Section:
             if "P" not in line:
                 continue
             self.player_start_position = Pos(line.index("P"), index)
+            self.set(self.player_start_position, " ")
         self.is_discovered = is_discovered
 
         self.start = start
