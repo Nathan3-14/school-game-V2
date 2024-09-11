@@ -50,7 +50,7 @@
             "br_bound": [14, 2]
         }
     ],
-    "loot": {
+    "loot_tables": {
         "chest1": {
             "items": {
                 "key": {

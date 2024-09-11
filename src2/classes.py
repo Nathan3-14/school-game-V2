@@ -1,6 +1,11 @@
 import time
 from typing import Dict, List
 from .common_classes import LootTable, Vector, Pos
+from rich.console import Console
+
+
+console = Console(highlight=False)
+print = console.print
 
 
 directions = {
@@ -51,7 +56,7 @@ class Player:
 
     def add_item_to_inventory_with_text(self, item_name: str, count: int) -> bool:
         self.add_item_to_inventory(item_name, count)
-        self.world.message = (f"You got {count} {item_name}{'s' if count > 1 else ''}")
+        self.world.message = (f"You got {count} {item_name}{'s' if count > 1 else ''}") # type: ignore
         return True
     
     def use_item_from_inventory(self, item_name: str, count: int=1) -> bool:
@@ -66,15 +71,15 @@ class Player:
     
     def use_item_from_inventory_with_text(self, item_name: str, count: int=1) -> bool:
         if self.use_item_from_inventory(item_name, count=count):
-            self.world.message = (f"You used <{count}> {item_name}{'s' if count > 1 else ''}")
+            self.world.message = (f"You used <{count}> {item_name}{'s' if count > 1 else ''}") # type: ignore
             return True
         else:
-            self.world.message = (f"You need <{count}> {item_name}{'s' if count > 1 else ''}>")
+            self.world.message = (f"You need <{count}> {item_name}{'s' if count > 1 else ''}>") # type: ignore
             return False
 
 
 class Section:
-    def __init__(self, area: List[str], start: Pos, end: Pos, loot_tables: Dict[Pos, LootTable]={}, is_discovered: bool=False) -> None:
+    def __init__(self, area: List[str], start: Pos, end: Pos, loot_tables: Dict[Pos, str]={}, is_discovered: bool=False) -> None:
         self.display_area = area
         self.start = start
         self.end = end
@@ -84,7 +89,7 @@ class Section:
             if "P" not in line:
                 continue
             self.player_start_position = Pos(line.index("P"), index)
-            self.set(self.player_start_position, " ")
+            self.set(self.player_start_position, ".")
         self.is_discovered = is_discovered
 
         self.loot_tables = loot_tables
@@ -123,7 +128,7 @@ class World:
         self.player.position = self.start_section.player_start_position # type: ignore
         self.player.world = self # type: ignore
 
-        self.display: List[str] = []
+        self.display_raw: List[str] = []
         self.message = ""
         
         self.collisions = ["#"]
@@ -134,7 +139,7 @@ class World:
         self.render() #? Renders the first screen of the game
     
     def update_display(self, skip_actions: bool=False) -> None:
-        display = ["                    "] * 10
+        display_raw = ["                    "] * 10
 
         for section in self.sections:
             if not section.is_discovered:
@@ -142,47 +147,57 @@ class World:
             
             for line_index, line in enumerate(section.display_area):
                 #? iterate and replace with different line each time from display
-                replace_string = [char for char in display[section.start.y+line_index]]
+                replace_string = [char for char in display_raw[section.start.y+line_index]]
 
                 line_replaced = ""
                 for char_index, char in enumerate(line): #? For layering the sections correctly
-                    if char == ",":
-                        replace_char = display[section.start.y+line_index][section.start.x+char_index]
+                    if char == "&":
+                        replace_char = display_raw[section.start.y+line_index][section.start.x+char_index]
                     else:
                         replace_char = char
                     line_replaced += replace_char
                 
                 replace_string[section.start.x:section.end.x] = line_replaced
-                display[section.start.y+line_index] = "".join(replace_string).replace("P", " ")
-                display[section.start.y+line_index] = "".join(replace_string).replace(".", " ")
+
+                #* Replace characters *#
+                # display[section.start.y+line_index] = "".join(replace_string).replace(".", " ")
+                display_raw[section.start.y+line_index] = "".join(replace_string)
 
         if self.check_collisions():
             self.player.move_back()
         if not skip_actions:
             self.check_actions()
 
+        display_fancified = display_raw.copy()
 
-        display[self.player.position.y] = "".join(
+        display_raw[self.player.position.y] = "".join(
             [
-                char if index != self.player.position.x else "@" for index, char in enumerate(display[self.player.position.y])
+                char if index != self.player.position.x else "@" for index, char in enumerate(display_raw[self.player.position.y])
+            ]
+        ) #? For placing the player at the correct position
+        display_fancified[self.player.position.y] = "".join(
+            [
+                char if index != self.player.position.x else "[bright_yellow]@[/bright_yellow]" for index, char in enumerate(display_raw[self.player.position.y])
             ]
         ) #? For placing the player at the correct position
 
-        self.display = display
+
+        self.display_raw = display_raw
+        self.display_fancified = display_fancified
     
     def check_collisions(self) -> bool:
         try:
-            return self.display[self.player.position.y][self.player.position.x] in self.collisions
+            return self.display_raw[self.player.position.y][self.player.position.x] in self.collisions
         except IndexError: #? Used to fix error on first rendering of game screen
             return False
     
     def check_actions(self) -> None:
         try:
-            self.display[self.player.position.y]
+            self.display_raw[self.player.position.y]
         except IndexError:#? Used to fix error on first rendering of game screen
             return None
         
-        current_icon = self.display[self.player.position.y][self.player.position.x]
+        current_icon = self.display_raw[self.player.position.y][self.player.position.x]
         match current_icon:
             case ">" | "<" | "^" | "v":
                 match current_icon:
@@ -205,30 +220,31 @@ class World:
                     self.player.move_back()
             case "*":
                 loot_table_name = self.get_current_section().loot_tables[self.player.position-self.get_current_section().start]
+
                 loot_table = self.loot_tables[loot_table_name]
                 item_gotten = loot_table.get_item()
                 self.player.add_item_to_inventory_with_text(item_gotten[0], item_gotten[1])
             case "+":
                 self.player.add_item_to_inventory_with_text("key", 1)
             case "~":
-                print("You Win!")
+                print("[magenta bold]You Win![/magenta bold]")
                 quit()
             case _:
                 pass
     
-    def get_current_section(self) -> Section | None:
+    def get_current_section(self) -> Section:
         for section in self.sections:
             if self.player in section:
                 return section
-        return None
+        return None #type:ignore
 
     def render(self, skip_print: bool=False):
         self.update_display()
         if not skip_print:
-            print(f"{self.message}")
+            print(f"[bright_green]{self.message}[/bright_green]")
             self.message = ""
-            print(f"Inventory: {','.join([f'{item} ({count})' for item, count in self.player.inventory.items() if count >= 1])}")
-            print("\n".join(self.display))
+            print(f"[bright_black]Inventory: {', '.join([f'[bright_cyan]{item}[/bright_cyan] [deep_sky_blue4]({count})[/deep_sky_blue4]' for item, count in self.player.inventory.items() if count >= 1])}[/bright_black]")
+            print("\n".join(self.display_fancified))
 
     def frame(self) -> None:
         self.player.get_input()

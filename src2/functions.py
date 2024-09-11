@@ -19,8 +19,7 @@ def create_world_from_file(file_path: str, handler: InputHandler) -> World:
     return World(
         sections,
         sections[0],
-        player=Player(handler),
-        chest_table=loot_table
+        Player(handler)
     )
 
 def set_in_string(old_string: str, index: int, replace_char: str) -> str:
