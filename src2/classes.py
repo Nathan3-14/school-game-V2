@@ -112,7 +112,7 @@ class Section:
 
 
 class World:
-    def __init__(self, world: List[Section], start_section: Section, player: Player, chest_table: LootTable | None=None) -> None:
+    def __init__(self, world: List[Section], start_section: Section, player: Player, loot_tables: Dict[str, LootTable]={}) -> None:
         self.sections = [
             section for section in world
             # section: True for section in world #? Test Line
@@ -128,7 +128,7 @@ class World:
         
         self.collisions = ["#"]
 
-        self.chest_table = chest_table
+        self.loot_tables = loot_tables
 
 
         self.render() #? Renders the first screen of the game
@@ -203,18 +203,9 @@ class World:
                     self.get_current_section().set(self.player.position, ".")
                 else:
                     self.player.move_back()
-                # if "key" not in list(self.player.inventory.keys()):
-                #     self.player.move_back()
-                # elif self.player.inventory["key"] >= 1:
-                #     self.player.inventory["key"] -= 1
-                #     self.message = "You used <1> key!"
-                #     self.get_current_section().set(self.player.position, ".") #type:ignore
-                # else:
-                #     self.player.move_back()
-                #     self.message = "You need a key!"
             case "*":
-                current_section = self.get_current_section()
-                loot_table = current_section.loot_tables[self.player.position-current_section.start]
+                loot_table_name = self.get_current_section().loot_tables[self.player.position-self.get_current_section().start]
+                loot_table = self.loot_tables[loot_table_name]
                 item_gotten = loot_table.get_item()
                 self.player.add_item_to_inventory_with_text(item_gotten[0], item_gotten[1])
             case "+":
@@ -236,7 +227,7 @@ class World:
         if not skip_print:
             print(f"{self.message}")
             self.message = ""
-            print(f"Inventory: {','.join(self.player.inventory)}")
+            print(f"Inventory: {','.join([f'{item} ({count})' for item, count in self.player.inventory.items() if count >= 1])}")
             print("\n".join(self.display))
 
     def frame(self) -> None:

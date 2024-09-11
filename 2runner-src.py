@@ -3,7 +3,7 @@ import time
 import sys
 
 
-loot_table = src2.LootTable({
+chest1_table = src2.LootTable({
     "key": {
         "min": 1,
         "max": 2,
@@ -75,7 +75,9 @@ sections = [
         ],
         src2.Pos(12, 0),
         src2.Pos(14, 2),
-        loot_tables={src2.Pos(1, 1): loot_table} #TODO Make <loot_table> be strings from a reference in the world TODO#
+        loot_tables={
+            src2.Pos(1, 1): "chest1"
+        }
     )
 ]
 
@@ -88,7 +90,10 @@ else:
 world = src2.World(
     sections,
     sections[0],
-    player
+    player,
+    {
+        "chest1": chest1_table
+    }
 )
 
 while True:
