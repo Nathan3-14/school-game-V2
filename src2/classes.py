@@ -48,6 +48,11 @@ class Player:
             self.inventory[item_name] += count
         else:
             self.inventory[item_name] = count
+
+    def add_item_to_inventory_with_text(self, item_name: str, count: int) -> bool:
+        self.add_item_to_inventory(item_name, count)
+        self.world.message = (f"You got {count} {item_name}{'s' if count > 1 else ''}")
+        return True
     
     def use_item_from_inventory(self, item_name: str, count: int=1) -> bool:
         if item_name in self.inventory:
@@ -59,15 +64,17 @@ class Player:
         else:
             return False
     
-    def use_item_from_inventory_with_text(self, item_name: str, count: int=1) -> None:
+    def use_item_from_inventory_with_text(self, item_name: str, count: int=1) -> bool:
         if self.use_item_from_inventory(item_name, count=count):
-            print(f"You used <{count}> {item_name}{'s' if count > 1 else ''}")
+            self.world.message = (f"You used <{count}> {item_name}{'s' if count > 1 else ''}")
+            return True
         else:
-            print(f"You need <{count}> {item_name}{'s' if count > 1 else ''}>")
+            self.world.message = (f"You need <{count}> {item_name}{'s' if count > 1 else ''}>")
+            return False
 
 
 class Section:
-    def __init__(self, area: List[str], start: Pos, end: Pos, is_discovered: bool=False) -> None:
+    def __init__(self, area: List[str], start: Pos, end: Pos, loot_tables: Dict[Pos, LootTable]={}, is_discovered: bool=False) -> None:
         self.display_area = area
         self.start = start
         self.end = end
@@ -80,15 +87,15 @@ class Section:
             self.set(self.player_start_position, " ")
         self.is_discovered = is_discovered
 
+        self.loot_tables = loot_tables
+
 
         display_area_reversed = self.display_area.copy()
         display_area_reversed.reverse()
     
-    def set(self, position: Pos, target_character: str) -> None:
+    def set(self, position: Pos, target_character: str, offset: bool=False) -> None:
         from .functions import set_in_string
 
-        print(self.display_area)
-        print(position)
         position_offset = position - self.start #? Needed in order to account for position being relative to map not to section
         self.display_area[position_offset.y] = set_in_string(self.display_area[position_offset.y], position_offset.x, target_character)
     
@@ -192,22 +199,26 @@ class World:
                         section.is_discovered = True
                 self.update_display(skip_actions=True)
             case "=":
-                if "key" not in list(self.player.inventory.keys()):
-                    self.player.move_back()
-                elif self.player.inventory["key"] >= 1:
-                    self.player.inventory["key"] -= 1
-                    self.message = "You used <1> key!"
-                    self.get_current_section().set(self.player.position, ".") #type:ignore
+                if self.player.use_item_from_inventory_with_text("key", 1):
+                    self.get_current_section().set(self.player.position, ".")
                 else:
                     self.player.move_back()
-                    self.message = "You need a key!"
+                # if "key" not in list(self.player.inventory.keys()):
+                #     self.player.move_back()
+                # elif self.player.inventory["key"] >= 1:
+                #     self.player.inventory["key"] -= 1
+                #     self.message = "You used <1> key!"
+                #     self.get_current_section().set(self.player.position, ".") #type:ignore
+                # else:
+                #     self.player.move_back()
+                #     self.message = "You need a key!"
             case "*":
-                item_gotten = self.chest_table.get_item() #type:ignore
-                self.message = f"You got {item_gotten[1]} {item_gotten[0]}(s)"
-                
-                self.player.add_item_to_inventory(item_gotten[0], item_gotten[1])
+                current_section = self.get_current_section()
+                loot_table = current_section.loot_tables[self.player.position-current_section.start]
+                item_gotten = loot_table.get_item()
+                self.player.add_item_to_inventory_with_text(item_gotten[0], item_gotten[1])
             case "+":
-                self.player.add_item_to_inventory("key", 1)
+                self.player.add_item_to_inventory_with_text("key", 1)
             case "~":
                 print("You Win!")
                 quit()

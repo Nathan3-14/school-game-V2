@@ -3,6 +3,20 @@ import time
 import sys
 
 
+loot_table = src2.LootTable({
+    "key": {
+        "min": 1,
+        "max": 2,
+        "weight": 1
+    },
+    "gold": {
+        "min": 3,
+        "max": 5,
+        "weight": 1
+    }
+})
+
+
 sections = [
     src2.Section(
         [
@@ -60,7 +74,8 @@ sections = [
             "#v#"
         ],
         src2.Pos(12, 0),
-        src2.Pos(14, 2)
+        src2.Pos(14, 2),
+        loot_tables={src2.Pos(1, 1): loot_table} #TODO Make <loot_table> be strings from a reference in the world TODO#
     )
 ]
 
@@ -68,25 +83,12 @@ if "-t" in sys.argv:
     player = src2.Player(src2.TypingHandler())
 else:
     player = src2.Player(src2.KeyboardHandler())
-loot_table = src2.LootTable({
-    "key": {
-        "min": 1,
-        "max": 2,
-        "weight": 1
-    },
-    "gold": {
-        "min": 3,
-        "max": 5,
-        "weight": 1
-    }
-})
 
 
 world = src2.World(
     sections,
     sections[0],
-    player,
-    chest_table=loot_table
+    player
 )
 
 while True:
