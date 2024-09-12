@@ -41,14 +41,14 @@ class Vector(Pos):
         return not self.__eq__(other)
     
 class LootTable:
-    def __init__(self, table: Dict[str, Dict[str, int]]) -> None:
+    def __init__(self, table: Dict[str, Dict[str, int|Dict[str,int]]]) -> None:
         self.possible_items = {
             name: {
-                "range": (data["min"], data["max"]),
-                "weight": data["weight"]
-            } for name, data in table.items()
+                "range": (data["min"], data["max"]), #type:ignore
+                "weight": data["weight"] #type:ignore
+            } for name, data in table["items"].items()
         }
-        self.roll_counts = 1
+        self.roll_counts = table["rolls"]
     
     def get_item(self) -> Tuple[str, int]:
         options = []

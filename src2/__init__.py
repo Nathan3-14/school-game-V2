@@ -8,3 +8,4 @@ except ModuleNotFoundError:
 from .classes import *
 from .input_handlers import *
 from .common_classes import *
+from .functions import create_world_from_file

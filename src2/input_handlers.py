@@ -75,4 +75,5 @@ class TestHandler(InputHandler):
                 return Vector(-1, 0)
             case "d":
                 return Vector(1, 0)
+        return Vector(0, 0)
 

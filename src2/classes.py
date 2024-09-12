@@ -17,10 +17,6 @@ directions = {
 directions_keys = list(directions.keys())
 
 
-# class Door:
-#     def __init__(self, start_room_pos: Pos, direction: Vector) -> None:
-#         self.door_position = start_room_pos
-#         self.door_direction = direction
 
 
 class Player:

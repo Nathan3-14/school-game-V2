@@ -14,12 +14,16 @@ def create_world_from_file(file_path: str, handler: InputHandler) -> World:
             Pos(map_object["br_bound"][0], map_object["br_bound"][1])
         ) for map_object in data["sections"]
     ]
-    loot_table = LootTable(data["loot"]["chest1"])
+    print(data["loot"])
+    loot_tables = {
+        loot_table_name: LootTable(loot_table_data) for loot_table_name, loot_table_data in data["loot"].items()
+    }
 
     return World(
         sections,
         sections[0],
-        Player(handler)
+        Player(handler),
+        loot_tables=loot_tables
     )
 
 def set_in_string(old_string: str, index: int, replace_char: str) -> str:
