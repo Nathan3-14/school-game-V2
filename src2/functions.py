@@ -11,7 +11,8 @@ def create_world_from_file(file_path: str, handler: InputHandler) -> World:
         Section(
             map_object["map"],
             Pos(map_object["tl_bound"][0], map_object["tl_bound"][1]),
-            Pos(map_object["br_bound"][0], map_object["br_bound"][1])
+            Pos(map_object["br_bound"][0], map_object["br_bound"][1]),
+            loot_tables=map_object["loot_tables"] if "loot_tables" in list(map_object.keys()) else {}
         ) for map_object in data["sections"]
     ]
     print(data["loot"])

@@ -7,7 +7,11 @@
             "map": [
             ],
             "tl_bound": [<x: int>, <y: int>],
-            "br_bound": [<x: int>, <y: int>]
+            "br_bound": [<x: int>, <y: int>],
+            [if map contains chest]
+            "loot_tables": [
+                [[x, y], "<loot_table_name>"]
+            ]
         },
         {
             "map": [
