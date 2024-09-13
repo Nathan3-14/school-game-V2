@@ -1,5 +1,7 @@
 import json
 
+from rich import print_json
+
 from .classes import Player, Section, World, Pos
 from .common_classes import LootTable
 from .input_handlers import InputHandler
@@ -12,10 +14,11 @@ def create_world_from_file(file_path: str, handler: InputHandler) -> World:
             map_object["map"],
             Pos(map_object["tl_bound"][0], map_object["tl_bound"][1]),
             Pos(map_object["br_bound"][0], map_object["br_bound"][1]),
-            loot_tables=map_object["loot_tables"] if "loot_tables" in list(map_object.keys()) else {}
+            loot_tables={
+                Pos(loot_table_list[0][0], loot_table_list[0][1]): loot_table_list[1] for loot_table_list in map_object["loot_tables"]
+            } if "loot_tables" in list(map_object.keys()) else {}
         ) for map_object in data["sections"]
     ]
-    print(data["loot"])
     loot_tables = {
         loot_table_name: LootTable(loot_table_data) for loot_table_name, loot_table_data in data["loot"].items()
     }

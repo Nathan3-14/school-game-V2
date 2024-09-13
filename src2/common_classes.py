@@ -1,5 +1,8 @@
+import json
 from random import randint
 from typing import Dict, Tuple
+
+from rich import print_json
 
 
 class Pos:
